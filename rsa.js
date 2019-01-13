@@ -1,6 +1,16 @@
+var p, q, e, d;
+var eps;
+let l = 2;
+let k = 3;
 const plaintext = ' abcdefghijklmnopqrstuvwxyz'
 const cyphertext = plaintext.toUpperCase()
 
+function gcd(a, b){
+    if ( ! b) {
+        return a;
+    }
+
+    return gcd(b, a % b);
 const mod = (x, n) => (x % n + n) % n
 
 function pow(a, b, mod){
@@ -14,6 +24,79 @@ function pow(a, b, mod){
     if (b % 2 === 0) return t;
 
     return (t * a) % mod;
+}
+
+
+function init(_p, _q)
+{
+    p = _p;
+    q = _q;
+    eps = (p-1) * (q-1);
+    console.log(eps);
+    e = Math.floor(Math.random() * (eps-1) + 1);
+    while(gcd(e,eps) !== 1)
+    {
+        e = Math.floor(Math.random() * (eps-1) + 1);
+    }
+    console.log(e);
+    d = modInv(e, eps);
+    console.log(d);
+
+
+}
+init(401, 503);
+
+
+function chunkToNr(chunk){
+    var res = 0;
+    for(i=0; i < l; ++i)
+    {
+        var nr = 0;
+        if(i < chunk.length)
+        {
+            nr = chunk.charCodeAt(i)- "a".charCodeAt(0) + 1;
+        }
+        res = 27 * res + nr;
+    }
+    return res;
+}
+
+function nrToChunk(nr){
+    
+}
+
+
+function split(input){
+    var chunks = input.match(/.{1,2}/g);
+    var result = [];
+    console.log(chunks);
+    for(idx in chunks)
+    {
+        result.push(chunkToNr(chunks[idx]))
+    }
+    return result
+}
+
+console.log(split("algebra"));
+
+
+
+function modInv(a, b) {
+    // console.log(a.toString() + ' ' + b.toString())
+    if (b === 0) {
+        return [1, 0, a];
+    }
+
+    temp = modInv(b, a % b);
+    x = temp[0];
+    y = temp[1];
+    d = temp[2];
+    return [y, x-y*Math.floor(a/b), d];
+}
+
+function modInvWrapper(a , b)
+{
+    alert(modInv(a, b)[0]);
 }
 
 function generatePrimes(upperLimit){
