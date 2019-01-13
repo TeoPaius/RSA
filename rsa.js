@@ -1,58 +1,90 @@
-var p, q, e, d;
+var p, q, e, d, n;
+e = 67;
+n = 1643;
+d = 163;
 var eps;
+var n;
 let l = 2;
 let k = 3;
+var wasInited = 0;
 const plaintext = ' abcdefghijklmnopqrstuvwxyz'
 const cyphertext = plaintext.toUpperCase()
 
-function gcd(a, b){
-    if ( ! b) {
+function gcd(a, b) {
+    if (!b) {
         return a;
     }
 
     return gcd(b, a % b);
+}
 const mod = (x, n) => (x % n + n) % n
 
-function pow(a, b, mod){
-    console.log(a, b, mod);
-    if (b === 0) return 1;
-    if (b === 1) return a % mod;
+function pow(a, b, n){
+    a = a % n;
 
-    let t = pow(a, b/2, mod) % mod;
-    t = (t*t) % mod;
+    var result = 1;
 
-    if (b % 2 === 0) return t;
+    var x = a;
 
-    return (t * a) % mod;
+
+
+    while(b > 0){
+
+        var leastSignificantBit = b % 2;
+
+        b = Math.floor(b / 2);
+
+
+
+        if (leastSignificantBit == 1) {
+
+            result = result * x;
+
+            result = result % n;
+
+        }
+
+
+
+        x = x * x;
+
+        x = x % n;
+
+    }
+
+    return result;
 }
 
 
-function init(_p, _q)
-{
+function init(_p, _q) {
+    wasInited = 1;
     p = _p;
     q = _q;
+    n = p*q;
     eps = (p-1) * (q-1);
-    console.log(eps);
     e = Math.floor(Math.random() * (eps-1) + 1);
+    // e  = 67;
     while(gcd(e,eps) !== 1)
     {
         e = Math.floor(Math.random() * (eps-1) + 1);
     }
     console.log(e);
-    d = modInv(e, eps);
+    d = modInv(e, eps)[0];
+    if(d < 0)
+        d = eps + d;
     console.log(d);
+    console.log(n);
 
 
 }
-init(401, 503);
 
 
-function chunkToNr(chunk){
+function chunkToNr(chunk, chunkSize){
     var res = 0;
-    for(i=0; i < l; ++i)
+    for(i=0; i < chunkSize; ++i)
     {
         var nr = 0;
-        if(i < chunk.length)
+        if(i < chunk.length && chunk[i] !== " ")
         {
             nr = chunk.charCodeAt(i)- "a".charCodeAt(0) + 1;
         }
@@ -61,24 +93,43 @@ function chunkToNr(chunk){
     return res;
 }
 
-function nrToChunk(nr){
-    
+function nrToChunk(nr, chunkSize){
+    idx = chunkSize-1;
+    result = [];
+    for(i = 0; i < chunkSize; ++i)
+    {
+        rem = nr % 27;
+        console.log(rem)
+        if(rem === 0)
+            result.push(" ");
+        else
+            result.push(String.fromCharCode("a".charCodeAt(0) + rem - 1));
+        nr = Math.floor(nr / 27);
+    }
+    return result.reverse().join("");
 }
 
 
-function split(input){
-    var chunks = input.match(/.{1,2}/g);
+function split(input, size){
+    var re = new RegExp('.{1,' + size + '}', 'g');
+    var chunks = input.match(re);
     var result = [];
+
+    while(chunks[chunks.length-1].length < size)
+    {
+        chunks[chunks.length-1] = chunks[chunks.length-1].concat(" ");
+    }
     console.log(chunks);
+
     for(idx in chunks)
     {
-        result.push(chunkToNr(chunks[idx]))
+        result.push(chunkToNr(chunks[idx], size))
     }
     return result
 }
 
-console.log(split("algebra"));
-
+console.log(split("algebra", 2));
+console.log(nrToChunk(498,3));
 
 
 function modInv(a, b) {
@@ -94,8 +145,7 @@ function modInv(a, b) {
     return [y, x-y*Math.floor(a/b), d];
 }
 
-function modInvWrapper(a , b)
-{
+function modInvWrapper(a , b) {
     alert(modInv(a, b)[0]);
 }
 
@@ -142,28 +192,56 @@ function getKey(name) {
 }
 
 function crypt() {
-    var text = getText()
+    var text = getText().toLowerCase();
     var primeNumber1 = getKey('primeNumber1')
     var primeNumber2 = getKey('primeNumber2')
+    // var primeNumber1 = p;
+    // var primeNumber2 = q;
 
-    var result = ''
 
-    //insert code here
+    var result = '';
 
-    document.getElementById('text').value = result
+    if(wasInited === 0)
+        init(primeNumber1, primeNumber2);
+    var codesPlain = split(text, l);
+    for(idx in codesPlain)
+    {
+        var codePlain = codesPlain[idx];
+        var codeCypher = pow(codePlain, e, n);
+        var stringCypher = nrToChunk(codeCypher, k);
+        result = result.concat(stringCypher);
+    }
+
+    document.getElementById('text').value = result.toUpperCase();
     validateInputs()
 }
 
 function decrypt() {
-    var text = getText()
+    var text = getText().toLowerCase();
     var primeNumber1 = getKey('primeNumber1')
     var primeNumber2 = getKey('primeNumber2')
+    // var primeNumber1 = p;
+    // var primeNumber2 = q;
 
-    var result = ''
 
-    //insert code here
+    var result = '';
 
-    document.getElementById('text').value = result
+    if(wasInited === 0)
+        init(primeNumber1, primeNumber2);
+
+    var codesCypher = split(text, k);
+    console.log(codesCypher);
+    for(idx in codesCypher)
+    {
+        var codeCypher = codesCypher[idx];
+        console.log(codeCypher);
+        var codePlain = pow(codeCypher, d, n);
+        console.log(codePlain);
+        var stringPlain = nrToChunk(codePlain, l);
+        console.log(stringPlain)
+        result = result.concat(stringPlain);
+    }
+    document.getElementById('text').value = result;
     validateInputs()
 }
 
