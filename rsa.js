@@ -252,6 +252,9 @@ function validateInputs() {
     primeNumber1 = getKey('primeNumber1');
     primeNumber2 = getKey('primeNumber2');
 
+
+
+
     var containsPlainChars = false
     var containsCypherChars = false
     var containsIllegalChars = false
@@ -281,6 +284,11 @@ function validateInputs() {
         setAlert('PrimeNumber1 is not PRIME!')
     } else if (containsIllegalChars) {
         setAlert('Text contains illegal characters!')
+    } else if(primeNumber1 * primeNumber2 < pow(27,l,99999999) || primeNumber1 * primeNumber2 > pow(27,k,999999)) {
+        console.log(pow(27,l,99999999))
+        console.log(pow(27,k,99999999))
+
+        setAlert('NUMBER NOT IN INTERVAL')
     } else if (containsPlainChars && containsCypherChars) {
         setAlert('Do not mix plaintext and cyphertext!')
     } else if (containsPlainChars) {
